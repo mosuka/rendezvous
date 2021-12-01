@@ -138,6 +138,18 @@ func (r *Ring) Lookup(key string) string {
 	return ""
 }
 
+func (r *Ring) Weight(name string) float64 {
+	r.mutex.RLock()
+	defer r.mutex.RUnlock()
+
+	ix := sort.Search(len(r.nodes), r.cmp(name))
+	if ix == len(r.nodes) {
+		return 0
+	}
+
+	return r.nodes[ix].weight
+}
+
 func (r *Ring) List() []string {
 	r.mutex.RLock()
 	defer r.mutex.RUnlock()

@@ -216,3 +216,17 @@ func TestRing_LookupTopN(t *testing.T) {
 		}
 	})
 }
+
+func TestRing_Weight(t *testing.T) {
+	t.Run("LookupTopN", func(t *testing.T) {
+		rv := New()
+
+		rv.AddWithWeight("a", 1.5)
+
+		weight := rv.Weight("a")
+		expected := 1.5
+		if weight != expected {
+			t.Errorf("Expected %v but got %v", expected, weight)
+		}
+	})
+}

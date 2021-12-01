@@ -10,8 +10,3 @@ for _, s := range serversAndWeights {
 
 addr := ring.Lookup("some_client_addr")
 ```
-
-Copyright (c) 2021 Minoru Osuka  
-Copyright (c) 2020 Benjamin Bader
-
-Made available under the Clear BSD License.

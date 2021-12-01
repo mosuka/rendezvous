@@ -6,6 +6,7 @@ import (
 	"io"
 	"math"
 	"sort"
+	"sync"
 )
 
 const (
@@ -18,6 +19,7 @@ const (
 type Ring struct {
 	nodes []*Node
 	hash  stdhash.Hash64
+	mutex sync.RWMutex
 }
 
 type Node struct {
@@ -39,10 +41,14 @@ func NewWithHash(hash stdhash.Hash64) *Ring {
 	return &Ring{
 		nodes: make([]*Node, 0),
 		hash:  hash,
+		mutex: sync.RWMutex{},
 	}
 }
 
 func (r *Ring) Contains(name string) bool {
+	r.mutex.RLock()
+	defer r.mutex.RUnlock()
+
 	for _, n := range r.nodes {
 		if n.name == name {
 			return true
@@ -56,6 +62,9 @@ func (r *Ring) Add(name string) {
 }
 
 func (r *Ring) AddWithWeight(name string, weight float64) {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
 	ix := sort.Search(len(r.nodes), r.cmp(name))
 
 	if ix < len(r.nodes) && r.nodes[ix].name == name {
@@ -73,6 +82,9 @@ func (r *Ring) AddWithWeight(name string, weight float64) {
 }
 
 func (r *Ring) Remove(name string) {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
 	ix := sort.Search(len(r.nodes), r.cmp(name))
 	if ix == len(r.nodes) {
 		return
@@ -85,6 +97,9 @@ func (r *Ring) Remove(name string) {
 }
 
 func (r *Ring) LookupAll(key string) []string {
+	r.mutex.RLock()
+	defer r.mutex.RUnlock()
+
 	keyHash := r.computeHash(key)
 
 	scoredNodes := make([]ScoredNode, 0)
@@ -124,11 +139,21 @@ func (r *Ring) Lookup(key string) string {
 }
 
 func (r *Ring) List() []string {
+	r.mutex.RLock()
+	defer r.mutex.RUnlock()
+
 	ns := make([]string, 0)
 	for _, n := range r.nodes {
 		ns = append(ns, n.name)
 	}
 	return ns
+}
+
+func (r *Ring) Len() int {
+	r.mutex.RLock()
+	defer r.mutex.RUnlock()
+
+	return len(r.nodes)
 }
 
 func (r *Ring) computeHash(name string) uint64 {

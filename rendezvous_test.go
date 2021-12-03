@@ -18,8 +18,11 @@ func TestRing_Remove(t *testing.T) {
 
 	rv.Remove("b")
 
-	if len(rv.nodes) != 2 || rv.nodes[0].name != "a" || rv.nodes[1].name != "b" {
-		t.Errorf("Expected Remove(\"b\") to remove the node labeled \"b\": nodes=%v", rv.nodes)
+	names := rv.List()
+	expected := []string{"a", "c"}
+
+	if !reflect.DeepEqual(names, expected) {
+		t.Errorf("Expected %v but got %v", expected, names)
 	}
 
 	rv.Remove("d")

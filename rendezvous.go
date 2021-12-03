@@ -91,8 +91,7 @@ func (r *Ring) Remove(name string) {
 	}
 
 	if r.nodes[ix].name == name {
-		copy(r.nodes[:ix], r.nodes[:ix+1])
-		r.nodes = r.nodes[:len(r.nodes)-1]
+		r.nodes = append(r.nodes[:ix], r.nodes[ix+1:]...)
 	}
 }
 
